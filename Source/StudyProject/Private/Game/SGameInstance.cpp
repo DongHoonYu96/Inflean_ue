@@ -71,6 +71,86 @@ void USGameInstance::Init()
 	{
 		Bird1->Fly();
 	}
+
+	//===================직렬화 실습=================
+	// FBirdData 구조체 인스턴스를 생성하고 로그를 출력합니다.
+	FBirdData SrcRawData(TEXT("Pigeon17"), 17);
+	UE_LOG(LogTemp, Log, TEXT("[SrcRawData] Name: %s, ID: %d"), *SrcRawData.Name, SrcRawData.ID);
+
+	// 저장할 디렉토리 경로를 생성합니다.
+	const FString SavedDir = FPaths::Combine(FPlatformMisc::ProjectDir(), TEXT("Saved"));
+	UE_LOG(LogTemp, Log, TEXT("SavedDir: %s"), *SavedDir);
+
+	// 원시 데이터 파일 이름을 설정하고 전체 경로를 생성합니다.
+	const FString RawDataFileName(TEXT("RawData.bin"));
+	FString AbsolutePathForRawData = FPaths::Combine(*SavedDir, *RawDataFileName);
+	UE_LOG(LogTemp, Log, TEXT("Relative path for saved file: %s"), *AbsolutePathForRawData);
+	FPaths::MakeStandardFilename(AbsolutePathForRawData);
+	UE_LOG(LogTemp, Log, TEXT("Absolute path for saved file: %s"), *AbsolutePathForRawData);
+
+	// 파일에 FBirdData를 쓰는 작업을 수행합니다.
+	FArchive* RawFileWriterAr = IFileManager::Get().CreateFileWriter(*AbsolutePathForRawData);
+	if (nullptr != RawFileWriterAr)
+	{
+	    *RawFileWriterAr << SrcRawData;
+	    RawFileWriterAr->Close();
+	    delete RawFileWriterAr;
+	    RawFileWriterAr = nullptr;
+	}
+
+	// 파일에서 FBirdData를 읽어오는 작업을 수행합니다.
+	FBirdData DstRawData;
+	FArchive* RawFileReaderAr = IFileManager::Get().CreateFileReader(*AbsolutePathForRawData);
+	if (nullptr != RawFileReaderAr)
+	{
+	    *RawFileReaderAr << DstRawData;
+	    RawFileReaderAr->Close();
+	    delete RawFileReaderAr;
+	    RawFileReaderAr = nullptr;
+
+	    UE_LOG(LogTemp, Log, TEXT("[DstRawData] Name: %s, ID: %d"), *DstRawData.Name, DstRawData.ID);
+	}
+
+	// USPigeon 객체를 생성하고 직렬화합니다.
+	SerializedPigeon = NewObject<USPigeon>();
+	SerializedPigeon->SetName(TEXT("Pigeon76"));
+	SerializedPigeon->SetID(76);
+	UE_LOG(LogTemp, Log, TEXT("[SerializedPigeon] Name: %s, ID: %d"), *SerializedPigeon->GetName(), SerializedPigeon->GetID());
+
+	// 객체 데이터 파일 이름을 설정하고 전체 경로를 생성합니다.
+	const FString ObjectDataFileName(TEXT("ObjectData.bin"));
+	FString AbsolutePathForObjectData = FPaths::Combine(*SavedDir, *ObjectDataFileName);
+	FPaths::MakeStandardFilename(AbsolutePathForObjectData);
+
+	// 메모리 버퍼에 USPigeon 객체를 직렬화합니다.
+	TArray<uint8> BufferArray;
+	FMemoryWriter MemoryWriterAr(BufferArray);
+	SerializedPigeon->Serialize(MemoryWriterAr);
+
+	// 파일에 직렬화된 데이터를 씁니다.
+	TUniquePtr<FArchive> ObjectDataFileWriterAr = TUniquePtr<FArchive>(IFileManager::Get().CreateFileWriter(*AbsolutePathForObjectData));
+	if (nullptr != ObjectDataFileWriterAr)
+	{
+	    *ObjectDataFileWriterAr << BufferArray;
+	    ObjectDataFileWriterAr->Close();
+	    ObjectDataFileWriterAr = nullptr;
+	}
+
+	// 파일에서 직렬화된 데이터를 읽어옵니다.
+	TArray<uint8> BufferArrayFromObjectDataFile;
+	TUniquePtr<FArchive> ObjectDataFileReaderAr = TUniquePtr<FArchive>(IFileManager::Get().CreateFileReader(*AbsolutePathForObjectData));
+	if (nullptr != ObjectDataFileReaderAr)
+	{
+	    *ObjectDataFileReaderAr << BufferArrayFromObjectDataFile;
+	    ObjectDataFileReaderAr->Close();
+	    ObjectDataFileReaderAr = nullptr;
+	}
+
+	// 읽어온 데이터로 USPigeon 객체를 역직렬화합니다.
+	FMemoryReader MemoryReaderAr(BufferArrayFromObjectDataFile);
+	USPigeon* Pigeon77 = NewObject<USPigeon>();
+	Pigeon77->Serialize(MemoryReaderAr);
+	UE_LOG(LogTemp, Log, TEXT("[Pigeon77] Name: %s, ID: %d"), *Pigeon77->GetName(), Pigeon77->GetID());
 }
 
 void USGameInstance::Shutdown()
