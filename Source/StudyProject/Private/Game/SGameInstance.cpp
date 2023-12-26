@@ -3,6 +3,7 @@
 
 #include "Game/SGameInstance.h"
 #include "SUnrealObjectClass.h"
+#include "Example/SPigeon.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 USGameInstance::USGameInstance()
@@ -59,6 +60,16 @@ void USGameInstance::Init()
 	{
 		//함수실행해봐
 		USObject1->ProcessEvent(HelloUnrealFunction, nullptr);
+	}
+
+	//===========인터페이스 실습=======================
+	USPigeon* Pigeon1 = NewObject<USPigeon>(); //생성자
+	ISFlyable* Bird1 = Cast<ISFlyable>(Pigeon1); //피존을 <Type>으로 업캐스팅
+	// 현업에서 인터페이스 개념은 대부분 이런식으로 업캐스팅 하기 위함. => 배열에 담아 관리하기위해
+
+	if (nullptr != Bird1)
+	{
+		Bird1->Fly();
 	}
 }
 
