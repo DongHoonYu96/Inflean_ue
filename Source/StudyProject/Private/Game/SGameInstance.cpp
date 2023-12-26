@@ -2,6 +2,8 @@
 
 
 #include "Game/SGameInstance.h"
+
+#include "JsonObjectConverter.h"
 #include "SUnrealObjectClass.h"
 #include "Example/SPigeon.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -151,6 +153,43 @@ void USGameInstance::Init()
 	USPigeon* Pigeon77 = NewObject<USPigeon>();
 	Pigeon77->Serialize(MemoryReaderAr);
 	UE_LOG(LogTemp, Log, TEXT("[Pigeon77] Name: %s, ID: %d"), *Pigeon77->GetName(), Pigeon77->GetID());
+
+	//=====================JSON 실습=================
+	// JSON 파일 이름을 설정하고 전체 경로를 생성합니다.
+	const FString JsonDataFileName(TEXT("StudyJsonFile.txt"));
+	FString AbsolutePathForJsonData = FPaths::Combine(*SavedDir, *JsonDataFileName);
+	FPaths::MakeStandardFilename(AbsolutePathForJsonData);
+
+	// 새로운 JSON 객체를 생성하고 USPigeon 객체를 JSON으로 변환합니다.
+	TSharedRef<FJsonObject> SrcJsonObject = MakeShared<FJsonObject>();
+	FJsonObjectConverter::UStructToJsonObject(SerializedPigeon->GetClass(), SerializedPigeon, SrcJsonObject);
+
+	// JSON 문자열을 작성합니다.
+	FString JsonOutString;
+	TSharedRef<TJsonWriter<TCHAR>> JsonWriterAr = TJsonWriterFactory<TCHAR>::Create(&JsonOutString);
+	if (true == FJsonSerializer::Serialize(SrcJsonObject, JsonWriterAr))
+	{
+		// JSON 문자열을 파일에 저장합니다.
+		FFileHelper::SaveStringToFile(JsonOutString, *AbsolutePathForJsonData);
+	}
+
+	// 파일에서 JSON 문자열을 읽어옵니다.
+	FString JsonInString;
+	FFileHelper::LoadFileToString(JsonInString, *AbsolutePathForJsonData);
+	TSharedRef<TJsonReader<TCHAR>> JsonReaderAr = TJsonReaderFactory<TCHAR>::Create(JsonInString);
+
+	// 읽어온 JSON 데이터를 사용하여 새로운 USPigeon 객체를 생성합니다.
+	TSharedPtr<FJsonObject> DstJsonObject;
+	if (true == FJsonSerializer::Deserialize(JsonReaderAr, DstJsonObject))
+	{
+		USPigeon* Pigeon78 = NewObject<USPigeon>();
+		if (true == FJsonObjectConverter::JsonObjectToUStruct(DstJsonObject.ToSharedRef(), Pigeon78->GetClass(), Pigeon78))
+		{
+			// 역직렬화된 객체의 정보를 로그로 출력합니다.
+			UE_LOG(LogTemp, Log, TEXT("[Pigeon78] Name: %s, ID: %d"), *Pigeon78->GetName(), Pigeon78->GetID());
+		}
+	}
+
 }
 
 void USGameInstance::Shutdown()
