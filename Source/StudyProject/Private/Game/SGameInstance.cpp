@@ -190,6 +190,119 @@ void USGameInstance::Init()
 		}
 	}
 
+	//==================TMAp 실습==================
+	TMap<int32, FString> BirdMap;
+	BirdMap.Add(5, TEXT("Pigeon"));
+	BirdMap.Add(2, TEXT("Owl"));
+	BirdMap.Add(7, TEXT("Albatross"));
+	// BirdMap == [
+	//  { Key: 5, Value: "Pigeon"     },
+	//  { Key: 2, Value: "Owl"        },
+	//  { Key: 7, Value: "Albatross"  }
+	// ]
+
+	BirdMap.Add(2, TEXT("Penquin"));
+	// BirdMap == [
+	//  { Key: 5, Value: "Pigeon"     },
+	//  { Key: 2, Value: "Penquin"    },
+	//  { Key: 7, Value: "Albatross"  }
+	// ]
+
+	FString* BirdIn7 = BirdMap.Find(7);
+	// *BirdIn7 == "Albatross"
+	FString* BirdIn8 = BirdMap.Find(8);
+	// *BirdIn8 == nullptr
+
+	//============TSET 실습==================
+	const int32 SetSize = 10;
+	TSet<int32> IntSet;
+
+	for (int32 i = 1; i <= SetSize; ++i)
+	{
+		IntSet.Add(i);
+	}
+
+	for (int32 Element : IntSet)
+	{
+		static int32 i = 0;
+		UE_LOG(LogTemp, Log, TEXT("[%d]: %d"), i++, Element);
+	}
+	UE_LOG(LogTemp, Log, TEXT("====="));
+
+	IntSet.Remove(2);
+	IntSet.Remove(4);
+	IntSet.Remove(6);
+	IntSet.Remove(8);
+	IntSet.Remove(10);
+
+	for (int32 Element : IntSet)
+	{
+		static int32 i = 0;
+		UE_LOG(LogTemp, Log, TEXT("[%d]: %d"), i++, Element);
+	}
+	UE_LOG(LogTemp, Log, TEXT("====="));
+
+	IntSet.Add(2);
+	IntSet.Add(4);
+	IntSet.Add(6);
+	IntSet.Add(8);
+	IntSet.Add(10);
+
+	for (int32 Element : IntSet)
+	{
+		static int32 i = 0;
+		UE_LOG(LogTemp, Log, TEXT("[%d]: %d"), i++, Element);
+	}
+	UE_LOG(LogTemp, Log, TEXT("====="));
+
+	int32 Key = 2;
+	UE_LOG(LogTemp, Log, TEXT("%d: %s"), Key, nullptr == IntSet.Find(Key) ? TEXT("nullptr") : TEXT("Is in"));
+
+	Key = 11;
+	UE_LOG(LogTemp, Log, TEXT("%d: %s"), Key, nullptr == IntSet.Find(Key) ? TEXT("nullptr") : TEXT("Is in"));
+
+	//=====================TArray 실습 ====================
+	//v.add==push_back , v.emplace == 객체배열일때 성능개선됨
+	const int32 ArraySize = 10;
+	TArray<int32> IntArray;
+
+	for (int32 i = 1; i <= ArraySize; ++i)
+	{
+		IntArray.Add(i);
+	}
+
+	for (int32 Element : IntArray)
+	{
+		static int32 i = 0;
+		UE_LOG(LogTemp, Log, TEXT("[%d]: %d"), i++, Element);
+	}
+	UE_LOG(LogTemp, Log, TEXT("====="));
+
+	IntArray.RemoveAll([](int32 InElement)->bool { return 0 == InElement % 2; });
+
+	for (int32 Element : IntArray)
+	{
+		static int32 i = 0;
+		UE_LOG(LogTemp, Log, TEXT("[%d]: %d"), i++, Element);
+	}
+	UE_LOG(LogTemp, Log, TEXT("====="));
+
+	IntArray += {2, 4, 6, 8, 10};
+
+	for (int32 Element : IntArray)
+	{
+		static int32 i = 0;
+		UE_LOG(LogTemp, Log, TEXT("[%d]: %d"), i++, Element);
+	}
+	UE_LOG(LogTemp, Log, TEXT("====="));
+
+	TArray<int32> IntArrayCompare;
+	IntArrayCompare.Init(0, ArraySize);
+	int32 IntArrayOriginal[] = {1, 3, 5, 7, 9, 2, 4, 6, 8, 10};
+	FMemory::Memcpy(IntArrayCompare.GetData(), IntArrayOriginal, sizeof(int32) * ArraySize);
+
+	UE_LOG(LogTemp, Log, TEXT("IntArray == IntArrayCompare ? %d"), IntArray == IntArrayCompare);
+
 }
 
 void USGameInstance::Shutdown()

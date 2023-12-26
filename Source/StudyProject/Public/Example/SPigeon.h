@@ -30,6 +30,17 @@ public:
 
 	virtual void Serialize(FArchive& Ar) override;
 
+	//TMAP 사용을 위한 연산자 오버로딩
+	bool operator==(const FBirdData& InBirdData) const
+	{
+		return ID == InBirdData.ID;
+	}
+
+	friend uint32 GetTypeHash(const FBirdData& InBirdData)
+	{
+		return GetTypeHash(InBirdData.ID);
+	}
+
 
 private:
 	UPROPERTY()
